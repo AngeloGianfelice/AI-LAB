@@ -280,11 +280,11 @@ To use this project you need to have **python 3** installed on your system and i
 This can be done by simply executing in your teminal the command:
 pip install [library_name]
 for every library listed above.
-Finally, if you want to try training and testing, on your own images, you can. Just make sure that the folder **'data//processsed_data'** is empty and inside the **'data//raw data'** folder you can put your own images seperated in two folder for the two respective classes you want. Then you need (only for the first time) to run 'py image_preprocessing.py command to check that all the images are in the right format and to split them into the different datasets(in the processed_data folder). After this you are good to go:
+Finally, if you want to try training and testing, on your own images, you can. Just create (in the data folder of the project) two subfolders: **raw_data**, where you'll need to put your own images divided into two subfolders(one for each class), and **processed_data**, which will contain the splitted datasets (just leave it empty for now). Then you need (only for the first time) to run 'py image_preprocessing.py command to check that all the images are in the right format and to split them into the different datasets(filling the processed_data folder). After this you are good to go:
 just run 'GrapesDetector.py command. 
 
 **Note**: to run GrapesDetector you'll need to pass an argument:  
-run ***py GrapesDetector.py train*** if you want to train your own model, ***py GrapesDetector.py test*** if you want to test a saved model. A the and of the training the model will be saved in the project main directory as 'model_state.pt'.
+run ***py GrapesDetector.py train*** if you want to train your own model, ***py GrapesDetector.py test*** if you want to test a saved model. A the and of the training the model will be saved in the project main directory as 'model_state.pt'. The project come in with a model which i have already trained with 4000 samples which you can test straight away. Have fun with it! :)
 
 
 
