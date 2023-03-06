@@ -1,20 +1,20 @@
 # Grapes Detection using VGG-19 Convolutional Neural Network
 I used the VGG-19 Convolutional Neural Network to detect images containg grapes (in all sort of shapes and colors). 
 ## Description  
-This is my first Machine Learning project: it was a lot of fun and i learned a lot about CNNs and its usage in image detection/classification
-The idea was to view the problem of grapes detection (or even the more general image detection) into a binary classification problem and use the VGG-19 as a simple feature extractor to obtain the 'style' of grapes to then use as input of classification layer which give, as final output, the probability of an image containing grapes. This Approach is often described as [transfer learning](https://cs231n.github.io/transfer-learning/) and in particular in my case I'm using the 'ConvNet as a fixed feature extractor' method of transfer learning, where the base CNN is used with pretrained weights (and all its parameters frozen) and I'm only training the classification layer (in my case I've chosen a simple logistic regression but a two layer classification neural net would work fine as well.
+This is my first **Machine Learning** project: it was a lot of fun and i learned a lot about **CNNs** and its usage in image detection/classification
+The idea was to view the problem of **grapes** detection (or even the more general image detection) into a binary classification problem and use the **VGG-19** as a simple feature extractor to obtain the '**style**' of grapes to then use as input of classification layer which give, as final output, the **probability** of an image containing grapes. This Approach is often described as [transfer learning](https://cs231n.github.io/transfer-learning/) and in particular in my case I'm using the '**ConvNet as a fixed feature extractor**' method of transfer learning, where the base CNN is used with ***pretrained weights*** (and all its parameters frozen) and I'm only training the classification layer (in my case I've chosen a simple logistic regression but a two layer classification neural net would work fine as well.
 Note: the fully connected classification layers that VGG19 comes with are removed and replaced with logistic regression.
-### Model Inputs
-Model inputs always have to be 4D array consisting of (batch_size,height,weight,depth) like it's shown in the image below:
+## Model Inputs
+Model inputs always have to be **4D array** consisting of (batch_size,height,weight,depth) like it's shown in the image below:
 
 ![VGG19_input](https://user-images.githubusercontent.com/83078138/222975487-b9b99032-7681-4f64-8b4b-9ccb55fff636.jpg)
 
 In my case the input images are RGB images of size (224,224,3) with a batches of 50 images
-For my model I have used in total 4000 images (both images contaning grapes and not) splitted into 75% training samples, and 12,5% for testing and validation samples(each) like shown in the picture below:
+For my model I have used in total **4000** images (both images contaning grapes and not) splitted into **75%** training samples, and **12,5%** for testing and validation samples(each) like shown in the picture below:
 
 ![meta-chart](https://user-images.githubusercontent.com/83078138/222976931-e517e9b2-2be8-421b-aeb4-132e2b7efe3a.png)
 
-### Model Architecture
+## Model Architecture
 VGG-19 contain a combination of layers which transform an image into output that the model can understand.
 
 ![vgg19-1024x173](https://user-images.githubusercontent.com/83078138/222979190-3bb1a4d2-9cf8-4b68-bf79-e5092a60d78a.png)
@@ -27,8 +27,8 @@ The final classification layer consists of a simple [logistic regression](https:
 
 ![1280px-Logistic-curve svg](https://user-images.githubusercontent.com/83078138/222980105-91764ef2-95f8-4765-b116-ac3d594d7bd0.png)
 
-### Code
-Raw images are first preprocessed in 'image_preprocessing.py' to assure they are all RGB format (3 channels) and splitted (via the [Split-Folders library](https://pypi.org/project/split-folders/) into the folder structure shown below:
+## Code
+Raw images are first preprocessed in 'image_preprocessing.py' to assure they are all **RGB** format (3 channels) and **splitted** (via the [Split-Folders library](https://pypi.org/project/split-folders/) into the folder structure shown below:
 
 ![folder structure](https://user-images.githubusercontent.com/83078138/222977832-9fc3f9e0-a5f2-4cb6-9377-04a484178999.PNG)
 
@@ -53,7 +53,7 @@ if __name__ =='__main__':
 ```
 
 The file GrapesDetector.py contains the model definition,initialization,training,validation,testing and results visualization.
-Firstly we initialize our hyperparameters:
+Firstly we initialize our **hyperparameters**:
 ```python
 #hyperparameters
 train_dir='D://Github//AI-LAB//data//processed_data//train' 
@@ -83,14 +83,14 @@ test_loader = transforms.Compose([
     transforms.Normalize(mean,std)
     ])  # transform it into a torch tensor
 ```
-where n_feature is the number of features extracted from the input batch of images by the VGG-19 neural net(exactly 7*7*512=25088) by the function feature_extractor.
+where ***n_feature*** is the number of features extracted from the input batch of images by the VGG-19 neural net(exactly 7*7*512=25088) by the function features_extractor.
 ```python
 #feature extractor
 def features_extractor(cnn,input):
         out=cnn(input) #vgg19
         return out
 ```
-Note that the training data is randomly flipped and rotated just the help avoid overfitting (with a bit of data augmentation)
+Note that the training data is randomly flipped and rotated just the help avoid overfitting (with a bit of **data augmentation**)
 and all images are first normalized before passing it through the CNN.
 Then we define our module:
 ```python
@@ -106,8 +106,8 @@ class GrapesDetector(nn.Module):
         y = torch.sigmoid(self.linear(x))
         return y
 ```
-Here we have simple Neural Net with only one layer which takes as input the features extracted by the CNN and generate, through the sigmoid function (see above), 
-a probability(before 0 and 1) that the input features contains grapes.
+Here we have simple **Neural Network** with only one layer which takes as input the features extracted by the CNN and generate, through the **sigmoid function** (see above), 
+a probability(between 0 and 1) that the input features contains grapes.
 After that we have the classic training and testing function:
 ```python
 #training function
@@ -188,18 +188,25 @@ def train_model(train_loader,val_loader,base,model,loss_fn,optimizer,batch_size,
     plotter(val_losses,'validation_loss','Model Validation Loss History','Batch Iterations','Loss','val_loss.png')
     plotter(val_accs,'validation_accuracy','Model Validation Accuracy History','Batch Iterations','Accuracy(%)','val_acc.png')
 ```
-Here we can see the classic training (and validation pipeline):
+Here we can see the classic training (and validation) pipeline:
 Firstly we use the built-in pytorch dataloaders to iterate through the input images in batches.
-The model trains throughout many epochs (25 in our case are more than sufficient) by taking one forward and one backward pass of all training samples each time
-Forward propagation calculates the loss and cost functions by comparing the difference between the actual and predicted target for each labeled image
-Backward propagation uses [gradient descent](https://en.wikipedia.org/wiki/Gradient_descent) to update the weights and bias for each neuron, attributing more impact on the neurons which have the most predictive power, until it arrives to an optimal activation combination (**global minimum**)(see image below).
+The model trains throughout many **epochs** (25 in our case are more than sufficient) by taking one **forward** and one **backward** pass of all training samples each time. Forward propagation calculates the loss and cost functions by comparing the difference between the actual and predicted target for each labeled image
+Backward propagation uses [stochastic gradient descent](https://en.wikipedia.org/wiki/Stochastic_gradient_descent) optimizer to update the weights and bias for each neuron, attributing more impact on the neurons which have the most predictive power, until it arrives to an optimal activation combination (**global minimum**)(see image below).
 
 ![gradient descent](https://user-images.githubusercontent.com/83078138/222984187-2655f905-ce66-4a89-a3a5-5cb3f4b41b58.jpg)
 
 As the model sees more examples, it learns to better predict the target causing the loss measure to decrease
-The cost function takes the average loss across all samples indicating overall performance. After every training epoch the model is tested with the validation dataset 
-to check model performance and improvements through the epochs (this process is called validation).
-Finally after the training phase has finished we plot our results (in particular loss and accuracy history of our model).  
+The cost function takes the average loss across all samples indicating overall performance. 
+In my case the **loss function** is, of course, the ***Binary Cross Entropy Loss***, which is defined as the negative average of the log of corrected predicted probabilities. It's standard for binary classification problem like mine:
+
+![BCE Loss](https://user-images.githubusercontent.com/83078138/222997616-3ac39fad-1b6b-4500-86a7-72be863436f5.jpg)
+
+Where **N** is the batch size, **pi** is the probability of class 1,**(1-pi)** is the probability of class 0 , while **yi** is the actual class of the given image.
+When the prediction belongs to class 1 the first part of the formula becomes active and the second part vanishes and vice versa.
+
+After every training epoch the model is tested with the validation dataset 
+to check model performance and improvements through the epochs (this process is called **validation**).
+Finally,  after the training phase has finished we plot our results (in particular loss and accuracy history of our model).  
 
 Then we have the testing function, where we test our already trained model with the test dataset:
 ```python
@@ -237,10 +244,50 @@ def test_model(test_loader,base,model,loss_fn,batch_size):
     test_correct /= test_size
     print(f"Avg loss: {test_loss} \nAccuracy: {test_correct*100}%")
 ```
-In my testing the model has reached an accuracy above 97% an the test dataset (500 images) 
+In my testing the model has reached an accuracy above **97%** on the test dataset (500 images) 
 The remaining function are all helper function for plotting and visualizing results and images
-### Results
-    todo
+## Results
+After 25 epochs of training the model history looks like this:
+
+![Train loss](https://user-images.githubusercontent.com/83078138/222993036-2eb9c776-5a08-4bd7-a3e4-7f9321ee07c4.png)
+![train_acc](https://user-images.githubusercontent.com/83078138/222993062-0c001ff8-ef51-4027-b729-d795c193ec18.png)
+![Val_loss](https://user-images.githubusercontent.com/83078138/222993832-4770fc32-46af-47b0-9662-9fc7ebebb23e.png)
+![val_acc](https://user-images.githubusercontent.com/83078138/222993869-7b375995-5bc6-400f-9812-564378d9fb8f.png)
+
+Here's an example of the model prediction with 6 random images:
+
+![test_batch_example](https://user-images.githubusercontent.com/83078138/222992540-94f81def-6de9-486a-8c9b-d59b41c9632f.png)
+
+## Usage
+To use this project you need to have **python 3** installed on your system and install the following python **libraries**:
+
+1)torch
+
+2)torchvision
+
+3)PIL
+
+4)os
+
+5)argparse
+
+6)matplolib.pyplot
+
+7)numpy
+
+8)splitfolders
+
+This can be done by simply executing in your teminal the command:
+pip install [library_name]
+for every library listed above.
+Finally, if you want to try training and testing, on your own images, you can. Just delete all the folders inside the **'data//processsed_data'** folder (leave it empty) 
+and inside the **'data//raw data'** folder you can put your own images seperated in two folder for the two respective classes you want. Then you need (only for the first time) to run 'py image_preprocessing.py command to check that all the images are in the right format and to split them into the different datasets. After this you are good to go:
+just run 'GrapesDetector.py command. 
+
+**Note**: to run GrapesDetector you'll need to pass an argument:  
+run ***py GrapesDetector.py train*** if you want to train your own model, ***py GrapesDetector.py test*** if you want to test a saved model. A the and of the training the model will be saved in the project main directory as 'model_state.pt'.
+
+
 
 
 
