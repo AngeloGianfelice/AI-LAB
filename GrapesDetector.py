@@ -221,8 +221,7 @@ def arg_parser():
     return arg.choice
 
 #main function
-def main():
-    arg=arg_parser()
+def main(arg):
 
     if torch.cuda.is_available() == False:
         print("Sorry, cuda not available")
@@ -281,5 +280,6 @@ def main():
         print('model saved succesfully')
 
 if __name__=="__main__":
-    main()
+    arg=arg_parser()
+    main(arg)
     

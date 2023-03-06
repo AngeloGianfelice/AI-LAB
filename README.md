@@ -280,8 +280,7 @@ To use this project you need to have **python 3** installed on your system and i
 This can be done by simply executing in your teminal the command:
 pip install [library_name]
 for every library listed above.
-Finally, if you want to try training and testing, on your own images, you can. Just delete all the folders inside the **'data//processsed_data'** folder (leave it empty) 
-and inside the **'data//raw data'** folder you can put your own images seperated in two folder for the two respective classes you want. Then you need (only for the first time) to run 'py image_preprocessing.py command to check that all the images are in the right format and to split them into the different datasets. After this you are good to go:
+Finally, if you want to try training and testing, on your own images, you can. Just make sure that the folder **'data//processsed_data'** is empty and inside the **'data//raw data'** folder you can put your own images seperated in two folder for the two respective classes you want. Then you need (only for the first time) to run 'py image_preprocessing.py command to check that all the images are in the right format and to split them into the different datasets(in the processed_data folder). After this you are good to go:
 just run 'GrapesDetector.py command. 
 
 **Note**: to run GrapesDetector you'll need to pass an argument:  
