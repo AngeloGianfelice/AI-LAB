@@ -28,7 +28,7 @@ The final classification layer consists of a simple [logistic regression](https:
 ![1280px-Logistic-curve svg](https://user-images.githubusercontent.com/83078138/222980105-91764ef2-95f8-4765-b116-ac3d594d7bd0.png)
 
 ## Code
-Raw images are first preprocessed in 'image_preprocessing.py' to assure they are all **RGB** format (3 channels) and **splitted** (via the [Split-Folders library](https://pypi.org/project/split-folders/) into the folder structure shown below:
+Raw images are first preprocessed in 'image_preprocessing.py' to assure they are all **RGB** format (3 channels) and **splitted** (via the [Split-Folders library](https://pypi.org/project/split-folders/)) into the folder structure shown below:
 
 ![folder structure](https://user-images.githubusercontent.com/83078138/222977832-9fc3f9e0-a5f2-4cb6-9377-04a484178999.PNG)
 
@@ -83,7 +83,7 @@ test_loader = transforms.Compose([
     transforms.Normalize(mean,std)
     ])  # transform it into a torch tensor
 ```
-where ***n_feature*** is the number of features extracted from the input batch of images by the VGG-19 neural net(exactly 7*7*512=25088) by the function features_extractor.
+where ***n_feature*** is the number of features extracted from the input batch of images by the VGG-19 neural net(exactly 7x7x512=25088) by the function features_extractor.
 ```python
 #feature extractor
 def features_extractor(cnn,input):
@@ -106,7 +106,7 @@ class GrapesDetector(nn.Module):
         y = torch.sigmoid(self.linear(x))
         return y
 ```
-Here we have simple **Neural Network** with only one layer which takes as input the features extracted by the CNN and generate, through the **sigmoid function** (see above), 
+Here we have simple **Neural Network** with only one layer which takes as input the features extracted by the CNN and generate, through the **sigmoid function** (see above), and returns
 a probability(between 0 and 1) that the input features contains grapes.
 After that we have the classic training and testing function:
 ```python
