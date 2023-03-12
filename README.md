@@ -272,18 +272,20 @@ Resnet , or residual network, is a specific type of neural network that was intr
 
 After 25 epochs of training the model history looks like this:
 
-![Train loss](https://user-images.githubusercontent.com/83078138/222993036-2eb9c776-5a08-4bd7-a3e4-7f9321ee07c4.png)
-![train acc](https://user-images.githubusercontent.com/83078138/222993062-0c001ff8-ef51-4027-b729-d795c193ec18.png)
-![Val loss](https://user-images.githubusercontent.com/83078138/222993832-4770fc32-46af-47b0-9662-9fc7ebebb23e.png)
-![val acc](https://user-images.githubusercontent.com/83078138/222993869-7b375995-5bc6-400f-9812-564378d9fb8f.png)
+![train_loss_comp](https://user-images.githubusercontent.com/83078138/224561166-a3c08e50-64fb-4c22-901a-9e547676d311.png)
+![train_acc_comp](https://user-images.githubusercontent.com/83078138/224561180-b464d7e9-bf72-4364-8ab3-b2da7ca429d2.png)
+![val_loss_comp](https://user-images.githubusercontent.com/83078138/224561188-5cd98b4a-64cf-471e-a545-8ef8824f747b.png)
+![val_acc_comp](https://user-images.githubusercontent.com/83078138/224561202-603ecf47-47aa-4540-a730-c72099522e68.png)
 
 ### Testing
+
+![vggVSresnet](https://user-images.githubusercontent.com/83078138/224561332-83ce4aee-8ef1-43c1-8542-7cfab80dd8cf.png)
+
+We can see that, although there is not much difference beetween vgg and resnet results, the second seems to have a small edge in all metrics (especially the loss), while accuracy differs generally by less than 1%.
 
 Here's an example of the model prediction with 6 random images:
 
 ![test_batch_example](https://user-images.githubusercontent.com/83078138/222992540-94f81def-6de9-486a-8c9b-d59b41c9632f.png)
-
-We can see that, although there is not much difference beetween vgg and resnet results, the second seems to have a small edge in all metrics (especially the loss), while accuracy differs generally by less than 1%.
 
 ## Usage
 To use this project you need to have **python 3** installed on your system and install the following python **libraries**:
