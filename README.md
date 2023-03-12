@@ -25,7 +25,7 @@ VGG-19 contain a combination of layers which transform an image into output that
 
 The final classification layer consists of a simple [logistic regression](https://en.wikipedia.org/wiki/Logistic_regression) using the [sigmoid function](https://en.wikipedia.org/wiki/Sigmoid_function)(see image below) to calculate the probability that the given image (or more precisely, its features) contains grapes:
 
-![1280px-Logistic-curve svg](https://user-images.githubusercontent.com/83078138/222980105-91764ef2-95f8-4765-b116-ac3d594d7bd0.png)
+![logistic curve](https://user-images.githubusercontent.com/83078138/224567842-729afab6-71ec-454e-a001-4a39c2b163a8.png)
 
 ## Code
 Raw images are first preprocessed in 'image_preprocessing.py' to assure they are all **RGB** format (3 channels) and **splitted** (via the [Split-Folders library](https://pypi.org/project/split-folders/)) into the folder structure shown below:
@@ -263,23 +263,26 @@ def test_model(test_loader,base,model,loss_fn,batch_size):
 
     return t_loss,t_correct
 ```
-In my testing the model has reached an accuracy above **97%** on the test dataset (500 images) 
 The remaining function are all helper function for plotting and visualizing results and images
 ## Results
-Just as a reference point, my vgg model results are compared with the [resnet18](https://en.wikipedia.org/wiki/Residual_neural_network) ones.
+Just as a reference point, my vgg19 model results are compared with the [resnet18](https://en.wikipedia.org/wiki/Residual_neural_network) ones.
 Resnet , or residual network, is a specific type of neural network that was introduced in 2015 to help alleviate the problem of training large CNNs using the concept of ***residual blocks*** and ***skip connection***.
 ### Training
 
 After 25 epochs of training the model history looks like this:
 
-![train_loss_comp](https://user-images.githubusercontent.com/83078138/224561166-a3c08e50-64fb-4c22-901a-9e547676d311.png)
-![train_acc_comp](https://user-images.githubusercontent.com/83078138/224561180-b464d7e9-bf72-4364-8ab3-b2da7ca429d2.png)
-![val_loss_comp](https://user-images.githubusercontent.com/83078138/224561188-5cd98b4a-64cf-471e-a545-8ef8824f747b.png)
-![val_acc_comp](https://user-images.githubusercontent.com/83078138/224561202-603ecf47-47aa-4540-a730-c72099522e68.png)
+![train_loss_comp](https://user-images.githubusercontent.com/83078138/224568043-9fa01213-e65b-4f74-8df4-dd6aca012517.png)
+![train_acc_comp](https://user-images.githubusercontent.com/83078138/224568049-7ab3feea-30ed-446e-b94d-336aa42b5515.png)
+![val_loss_comp](https://user-images.githubusercontent.com/83078138/224568059-5e398a81-c456-4593-baa8-98ec83d37307.png)
+![val_acc_comp](https://user-images.githubusercontent.com/83078138/224568071-bc26f38e-2820-46f5-99ef-b54b1f36853c.png)
+![training_time](https://user-images.githubusercontent.com/83078138/224568082-14e467b3-f4b9-4c10-bd0d-e530bebd1b6c.png)
+
 
 ### Testing
 
-![vggVSresnet](https://user-images.githubusercontent.com/83078138/224561332-83ce4aee-8ef1-43c1-8542-7cfab80dd8cf.png)
+In my testing the model has reached an accuracy above **97%** on the test dataset (500 images) like shown below: 
+
+![vggVSresnet](https://user-images.githubusercontent.com/83078138/224568094-0b556197-1436-4ed4-9bdd-c304ff161e4b.png)
 
 Here's an example of the model prediction with 6 random images:
 
@@ -307,6 +310,8 @@ To use this project you need to have **python 3** installed on your system and i
 
 8)splitfolders
 
+9)time
+
 This can be done by simply executing in your teminal the command:
 pip install [library_name]
 for every library listed above.
@@ -314,7 +319,7 @@ Finally, if you want to try training and testing, on your own images, you can (y
 just run 'GrapesDetector.py command. 
 
 **Note**: to run GrapesDetector you'll need to pass an argument:  
-run ***py GrapesDetector.py train*** if you want to train your own model, ***py GrapesDetector.py test*** if you want to test a saved model. At the end of training the vgg and resnet models will be saved in the main project folder as 'grapes_detector_vgg' and 'grepes_detector_resnet' respectively. The project comes in with the models which i have already trained and tested with 4000 samples which you can test straight away. Have fun with it! :)
+run ***py GrapesDetector.py train*** if you want to train your own model, ***py GrapesDetector.py test*** if you want to test a saved model. At the end of training the vgg and resnet models will be saved in the main project folder as 'grapes_detector_vgg.pt' and 'grepes_detector_resnet.pt' respectively. The project comes in with the models which i have already trained and tested with 4000 samples which you can test straight away. Have fun with it! :)
 
 
 
