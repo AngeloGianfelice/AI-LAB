@@ -7,11 +7,12 @@ from torchvision import transforms,datasets
 import torchvision.models as models
 import numpy as np
 import argparse
+import os
 
 #hyperparameters
-train_dir='D://Github//AI-LAB//data//processed_data//train' 
-val_dir='D://Github//AI-LAB//data//processed_data//val'
-test_dir='D://Github//AI-LAB//data//processed_data//test'
+train_dir='data//processed_data//train' 
+val_dir='data//processed_data//val'
+test_dir='data//processed_data//test'
 epochs=25
 learning_rate=0.001
 image_size=224
@@ -20,6 +21,8 @@ n_features=25088
 mean=[0.485, 0.456, 0.406]
 std=[0.229, 0.224, 0.225]
 device=torch.device("cuda" if torch.cuda.is_available() else "cpu")
+#defining loss function (Binary cross Entropy Loss) Note: loss_fn is the same in all cases (vgg/resnet/train/test) 
+loss_fn=nn.BCELoss()
 
 train_loader = transforms.Compose([
     transforms.Resize((image_size,image_size)),  # scale imported image
@@ -48,19 +51,24 @@ class GrapesDetector(nn.Module):
         y = torch.sigmoid(self.linear(x))
         return y
 
-#feature extractor
+#feature extractor function
 def features_extractor(cnn,input):
         out=cnn(input) #vgg19
         return out
 
 #training function
 def train_model(train_loader,val_loader,base,model,loss_fn,optimizer,batch_size,epochs):
-    
+
     #initialize list for later plotting results
+    history=[]
     train_losses=[]
     train_accs=[]
     val_losses=[]
     val_accs=[]
+    train_samples=len(train_loader.dataset)
+    train_batches=len(train_loader)
+    validation_samples=len(val_loader.dataset)
+    validation_baches=len(val_loader)
 
     #training loop 
     for epoch in range(epochs):
@@ -69,7 +77,8 @@ def train_model(train_loader,val_loader,base,model,loss_fn,optimizer,batch_size,
         model.train() 
         print(f"Epoch {epoch+1}")
         print("training phase...")
-
+        t_loss=0
+        t_correct=0
         for inputs,label in train_loader:
         
             #forward pass
@@ -81,21 +90,24 @@ def train_model(train_loader,val_loader,base,model,loss_fn,optimizer,batch_size,
             pred=pred.to(device).to(torch.float)
             target=label.to(device).to(torch.float)
             loss=loss_fn(pred,target)
-            train_losses.append(loss.item())
+            t_loss+=loss.item()
             
             #Calculating training accuracy
             pred=pred.detach().round()
             train_correct=0
             for t in range(batch_size):
                 if (pred[t]==target[t]).item():
-                    train_correct += 1
-            train_accs.append(train_correct/batch_size)
+                    t_correct += 1
             
-
             #apply backpropagation
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
+        
+        t_loss /= train_batches
+        t_correct /= train_samples
+        train_losses.append(t_loss)
+        train_accs.append(t_correct*100)
 
         print("Training Done!")
         
@@ -104,7 +116,8 @@ def train_model(train_loader,val_loader,base,model,loss_fn,optimizer,batch_size,
         print("validation phase...")
         
         with torch.no_grad():
-
+            v_loss=0
+            v_correct=0
             for inputs, labels in val_loader:
 
                 inputs=inputs.to(device)
@@ -112,31 +125,35 @@ def train_model(train_loader,val_loader,base,model,loss_fn,optimizer,batch_size,
                 out=features_extractor(base,inputs)
                 pred = model(out).to(torch.float).view(batch_size)
                 loss=loss_fn(pred, labels)
-                val_losses.append(loss.item())
+                v_loss += loss.item()
 
                 #Calculating validation accuracy
                 pred=pred.detach().round()
-                val_correct=0
                 for t in range(batch_size):
                     if (pred[t]==labels[t]).item():
-                        val_correct +=1
-                val_accs.append(val_correct/batch_size)
-                
+                        v_correct +=1
+
+            v_loss /= validation_baches
+            v_correct /= validation_samples
+            val_losses.append(v_loss)
+            val_accs.append(v_correct*100) 
+
         print("Validation Done!")
         print("-------------------------------")
     
-    #plotting loss and accuracy history
-    plotter(train_losses,'train_loss','Model Training Loss History','Batch Iterations','Loss','train_loss.png')
-    plotter(train_accs,'train_accuracy','Model Training Accuracy History','Batch Iterations','Accuracy(%)','train_acc.png')
-    plotter(val_losses,'validation_loss','Model Validation Loss History','Batch Iterations','Loss','val_loss.png')
-    plotter(val_accs,'validation_accuracy','Model Validation Accuracy History','Batch Iterations','Accuracy(%)','val_acc.png')
-
+    history.append(train_losses)
+    history.append(train_accs)
+    history.append(val_losses)
+    history.append(val_accs)
+    return history
+    
 #testing function        
 def test_model(test_loader,base,model,loss_fn,batch_size):
     model.eval()
-    test_size = len(test_loader.dataset)
-    test_loss=0
-    test_correct=0
+    test_samples = len(test_loader.dataset)
+    test_batches = len(test_loader)
+    t_loss=0
+    t_correct=0
     random_number=np.random.randint(0,len(test_loader))
 
     with torch.no_grad():
@@ -148,23 +165,26 @@ def test_model(test_loader,base,model,loss_fn,batch_size):
             out=features_extractor(base,inputs)
             pred = model(out).to(torch.float).view(batch_size)
             loss=loss_fn(pred, labels)
-            loss=loss.detach()
-            test_loss += loss
+            loss=loss.item()
+            t_loss += loss
 
-            #select radnom batch to visualize predictions
-            if(i==random_number):
-                show_random_prediction(inputs,pred,num=6)
+            #select random batch to visualize predictions
+            #if(i==random_number):
+                #show_random_prediction(inputs,pred,num=6)
             
             #checking testing accuracy
             pred=pred.detach().round()
             for t in range(batch_size):
                 if (pred[t]==labels[t]).item():
-                    test_correct +=1
+                    t_correct +=1
 
-    test_loss /= len(test_loader)
-    test_correct /= test_size
-    print(f"Avg loss: {test_loss} \nAccuracy: {test_correct*100}%")
-    
+        t_loss /= test_batches
+        t_correct /= test_samples
+        t_loss=np.round(t_loss,decimals=3)
+        t_correct=np.round(t_correct*100,decimals=2)
+
+    return t_loss,t_correct
+
 #batch visualizer function
 def show_random_prediction(input,pred,num):
 
@@ -202,58 +222,148 @@ def imshow(inp, title=None):
         plt.title(title)
     plt.pause(5)
 
-#history data plotter
-def plotter(data,data_label,title,xlabel,ylabel,fname):
-    plt.figure(figsize=(10,10))
-    plt.title(title)
-    plt.plot(data,label=data_label)
-    plt.xlabel(xlabel)  
-    plt.ylabel(ylabel)
+#plotter helper function
+def history_plotter(vgg_history,resnet_history):
+
+    #plotting training loss
+    plt.figure(figsize=(10,5))
+    plt.title('Train Loss History')
+    plt.plot(vgg_history[0],label='train_loss_vgg')
+    plt.plot(resnet_history[0],label='train_loss_resnet')    
+    plt.xlabel('epochs')  
+    plt.ylabel('loss')
     plt.legend()
-    plt.savefig('D://Github//AI-LAB//data//plotted_results//'+fname)
+    plt.savefig('data//plotted_results//'+'train_loss_comp')
+    plt.show()
+
+    #plotting training accuracy
+    plt.figure(figsize=(10,5))
+    plt.title('Train Accuracy History')
+    plt.plot(vgg_history[1],label='train_acc_vgg')
+    plt.plot(resnet_history[1],label='train_acc_resnet')    
+    plt.xlabel('epochs')  
+    plt.ylabel('accuracy(%)')
+    plt.legend()
+    plt.savefig('data//plotted_results//'+'train_acc_comp')
+    plt.show()
+
+    #plotting validation loss
+    plt.figure(figsize=(10,5))
+    plt.title('Validation Loss History')
+    plt.plot(vgg_history[2],label='val_loss_vgg')
+    plt.plot(resnet_history[2],label='val_loss_resnet')    
+    plt.xlabel('epochs')  
+    plt.ylabel('loss')
+    plt.legend()
+    plt.savefig('data//plotted_results//'+'val_loss_comp')
+    plt.show()
+
+    #plotting training loss
+    plt.figure(figsize=(10,5))
+    plt.title('Validation Accuracy History')
+    plt.plot(vgg_history[3],label='val_acc_vgg')
+    plt.plot(resnet_history[3],label='val_acc_resnet')    
+    plt.xlabel('epochs')  
+    plt.ylabel('loss')
+    plt.legend()
+    plt.savefig('data//plotted_results//'+'val_acc_comp')
     plt.show()
 
 #arg parser function
 def arg_parser():
     parser=argparse.ArgumentParser()
-    parser.add_argument("choice",type=str,help="Operazione consentite: train | test",choices=['train','test'])
+    parser.add_argument("mode",type=str,help="Operazione consentite: train | test",choices=['train','test'])
     arg=parser.parse_args()
-    return arg.choice
+    return arg.mode
 
 #main function
-def main(arg):
+def main(mode):
 
     if torch.cuda.is_available() == False:
         print("Sorry, cuda not available")
     else:
         print("Cuda available on: ",torch.cuda.get_device_name())
-    
-    #importing pretrained VGG-19 network
-    cnn = models.vgg19(weights=models.VGG19_Weights.IMAGENET1K_V1).features.to(device).eval()
 
-    #freezing vgg19 weights
-    for param in cnn.parameters():
+    #importing pretrained VGG-19 network
+    vgg = models.vgg19(weights=models.VGG19_Weights.IMAGENET1K_V1).features.to(device).eval() #Note: IMAGENET1k_V1 weights is the same as pretrained=True
+    vgg_fname='grapes_detector_vgg.pt'
+
+    #importing pretrained resnet18 network
+    resnet18 = models.resnet18(weights=models.ResNet18_Weights.IMAGENET1K_V1)
+    #strip resnet of its classification layer (as we do the classification ourselves XD)
+    modules=list(resnet18.children())[:-2]
+    resnet=nn.Sequential(*modules).to(device).eval()
+    resnet_fname='grapes_detector_resnet.pt'
+
+    #freezing vgg weights
+    for param in vgg.parameters():
+        param.requires_grad = False
+    
+    #freezing resnet weights
+    for param in resnet.parameters():
         param.requires_grad = False
 
-    #defining loss function (Binary cross Entropy Loss)
-    loss_fn=nn.BCELoss()
+    if mode == 'test':
 
-    if arg == 'test':
         #loading test data
         test_dataset = datasets.ImageFolder(test_dir, transform=test_loader)
         test_dataloader = DataLoader(dataset=test_dataset, batch_size=batch_size, shuffle=True,num_workers=2)
 
         #testing phase
-        #loading model
-        loaded_model=GrapesDetector(n_features).to(device)
-        loaded_model.load_state_dict(load('model_state.pt'))
+        #loading models
+        loaded_model_vgg=GrapesDetector(n_features).to(device)
+        loaded_model_resnet=GrapesDetector(n_features).to(device)
+        loaded_model_vgg.load_state_dict(load(vgg_fname))
+        loaded_model_resnet.load_state_dict(load(resnet_fname))
     
-        #testing model
+        #testing models
         print("testing model...")
-        test_model(test_dataloader, cnn, loaded_model, loss_fn, batch_size)
-        print("Testing Done!")
+        vgg_loss,vgg_acc=test_model(test_dataloader, vgg, loaded_model_vgg, loss_fn, batch_size)
+        res_loss,res_acc=test_model(test_dataloader, resnet, loaded_model_resnet, loss_fn, batch_size)
 
-    else:
+
+        #plotting testing history
+        categories = ["VGG19", "RESNET18"]
+        fig=plt.figure(figsize=(10,5))
+        #loss graph
+        plt.subplot(1,2,1)
+        plt.title('average test loss')
+        xs = np.arange(1, len(categories) + 1)
+        plt.bar(xs, [vgg_loss,res_loss], width=1, color=['green','red'], edgecolor='black')
+        plt.text(0.75,vgg_loss,str(vgg_loss),fontweight='bold')
+        plt.text(1.75,res_loss,str(res_loss),fontweight='bold')
+        plt.ylabel('loss')
+        plt.xticks(xs, categories)
+        plt.xlim(0, len(categories) + 1)
+
+        #acc graph
+        plt.subplot(1,2,2)
+        plt.title('test accuracy')
+        xs = np.arange(1, len(categories) + 1)
+        plt.bar(xs, [vgg_acc,res_acc], width=1, color=['green','red'], edgecolor='black')
+        plt.text(0.75,vgg_acc,str(vgg_acc),fontweight='bold')
+        plt.text(1.75,res_acc,str(res_acc),fontweight='bold')
+        plt.ylabel('accuracy(%)')
+        plt.xticks(xs, categories)
+        plt.xlim(0, len(categories) + 1)
+
+        fig.savefig('data//plotted_results//vggVSresnet')
+        plt.suptitle('VGG19 vs RESNET18')
+        plt.show()
+        print("Testing Done!")
+    
+    elif mode == 'train':
+
+       #deleting existing vgg model
+        if os.path.isfile('grapes_detector_vgg.pt'):
+            os.remove('grapes_detector_vgg.pt')
+        else:
+            print("VGG Model is not present in the system.")
+         #deleting existing resnet model
+        if os.path.isfile('grapes_detector_resnet.pt'):
+            os.remove('grapes_detector_resnet.pt')
+        else:
+            print("RESNET Model is not present in the system.")
 
         #loading train data
         train_dataset = datasets.ImageFolder(train_dir,transform=train_loader)
@@ -263,23 +373,47 @@ def main(arg):
         val_dataset = datasets.ImageFolder(val_dir, transform=train_loader)
         val_dataloader = DataLoader(dataset=val_dataset, batch_size=batch_size, shuffle=True,num_workers=2)
 
+        #VGG Training
         #initializing neural network
-        grapes_detector=GrapesDetector(n_features).to(device)
+        grapes_detector_vgg=GrapesDetector(n_features).to(device)
 
         #defining optimizer
-        optimizer= torch.optim.SGD(grapes_detector.parameters(),lr=learning_rate)
+        optimizer= torch.optim.SGD(grapes_detector_vgg.parameters(),lr=learning_rate)
 
         #training model (with validation)
-        train_model(train_dataloader, val_dataloader, cnn, grapes_detector, loss_fn, optimizer, batch_size, epochs)   
+        history_vgg=train_model(train_dataloader, val_dataloader, vgg, grapes_detector_vgg, loss_fn, optimizer, batch_size, epochs)   
         print("Training Done!")
 
         #saving trained model as 'model_state.pt'
         print('saving trained model') 
-        with open('model_state.pt', 'wb') as fsave: 
-            save(grapes_detector.state_dict(), fsave)
+        with open(vgg_fname, 'wb') as fsave: 
+            save(grapes_detector_vgg.state_dict(), fsave)
         print('model saved succesfully')
 
+        #RESNET training
+        #initializing neural network
+        grapes_detector_resnet=GrapesDetector(n_features).to(device)
+
+        #defining optimizer
+        optimizer= torch.optim.SGD(grapes_detector_resnet.parameters(),lr=learning_rate)
+
+        #training model (with validation)
+        history_resnet=train_model(train_dataloader, val_dataloader, resnet, grapes_detector_resnet, loss_fn, optimizer, batch_size, epochs)   
+        print("Training Done!")
+
+        #saving trained model as 'model_state.pt'
+        print('saving trained model') 
+        with open(resnet_fname, 'wb') as fsave: 
+            save(grapes_detector_resnet.state_dict(), fsave)
+        print('model saved succesfully')
+
+        #plotter function
+        history_plotter(history_vgg,history_resnet)
+
+    else:
+        raise TypeError("Unknown mode: use train or test")
+
 if __name__=="__main__":
-    arg=arg_parser()
-    main(arg)
+    mode=arg_parser()
+    main(mode)
     

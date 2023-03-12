@@ -2,8 +2,8 @@ from PIL import Image
 import os
 import splitfolders 
 
-raw_data_path='D://Github//AI-LAB//data//raw_data//'
-processed_data_path='D://Github//AI-LAB//data//processed_data//'
+raw_data_path='data//raw_data//'
+processed_data_path='data//processed_data//'
 
 
 def Convert_to_RGB(path):

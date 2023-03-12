@@ -67,6 +67,8 @@ n_features=25088
 mean=[0.485, 0.456, 0.406]
 std=[0.229, 0.224, 0.225]
 device=torch.device("cuda" if torch.cuda.is_available() else "cpu")
+#defining loss function (Binary cross Entropy Loss) Note: loss_fn is the same in all cases (vgg/resnet/train/test) 
+loss_fn=nn.BCELoss()
 
 train_loader = transforms.Compose([
     transforms.Resize((image_size,image_size)),  # scale imported image
@@ -112,12 +114,17 @@ After that we have the classic training and testing function:
 ```python
 #training function
 def train_model(train_loader,val_loader,base,model,loss_fn,optimizer,batch_size,epochs):
-    
+
     #initialize list for later plotting results
+    history=[]
     train_losses=[]
     train_accs=[]
     val_losses=[]
     val_accs=[]
+    train_samples=len(train_loader.dataset)
+    train_batches=len(train_loader)
+    validation_samples=len(val_loader.dataset)
+    validation_baches=len(val_loader)
 
     #training loop 
     for epoch in range(epochs):
@@ -126,7 +133,8 @@ def train_model(train_loader,val_loader,base,model,loss_fn,optimizer,batch_size,
         model.train() 
         print(f"Epoch {epoch+1}")
         print("training phase...")
-
+        t_loss=0
+        t_correct=0
         for inputs,label in train_loader:
         
             #forward pass
@@ -138,21 +146,24 @@ def train_model(train_loader,val_loader,base,model,loss_fn,optimizer,batch_size,
             pred=pred.to(device).to(torch.float)
             target=label.to(device).to(torch.float)
             loss=loss_fn(pred,target)
-            train_losses.append(loss.item())
+            t_loss+=loss.item()
             
             #Calculating training accuracy
             pred=pred.detach().round()
             train_correct=0
             for t in range(batch_size):
                 if (pred[t]==target[t]).item():
-                    train_correct += 1
-            train_accs.append(train_correct/batch_size)
+                    t_correct += 1
             
-
             #apply backpropagation
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
+        
+        t_loss /= train_batches
+        t_correct /= train_samples
+        train_losses.append(t_loss)
+        train_accs.append(t_correct*100)
 
         print("Training Done!")
         
@@ -161,7 +172,8 @@ def train_model(train_loader,val_loader,base,model,loss_fn,optimizer,batch_size,
         print("validation phase...")
         
         with torch.no_grad():
-
+            v_loss=0
+            v_correct=0
             for inputs, labels in val_loader:
 
                 inputs=inputs.to(device)
@@ -169,28 +181,31 @@ def train_model(train_loader,val_loader,base,model,loss_fn,optimizer,batch_size,
                 out=features_extractor(base,inputs)
                 pred = model(out).to(torch.float).view(batch_size)
                 loss=loss_fn(pred, labels)
-                val_losses.append(loss.item())
+                v_loss += loss.item()
 
                 #Calculating validation accuracy
                 pred=pred.detach().round()
-                val_correct=0
                 for t in range(batch_size):
                     if (pred[t]==labels[t]).item():
-                        val_correct +=1
-                val_accs.append(val_correct/batch_size)
-                
+                        v_correct +=1
+
+            v_loss /= validation_baches
+            v_correct /= validation_samples
+            val_losses.append(v_loss)
+            val_accs.append(v_correct*100) 
+
         print("Validation Done!")
         print("-------------------------------")
     
-    #plotting loss and accuracy history
-    plotter(train_losses,'train_loss','Model Training Loss History','Batch Iterations','Loss','train_loss.png')
-    plotter(train_accs,'train_accuracy','Model Training Accuracy History','Batch Iterations','Accuracy(%)','train_acc.png')
-    plotter(val_losses,'validation_loss','Model Validation Loss History','Batch Iterations','Loss','val_loss.png')
-    plotter(val_accs,'validation_accuracy','Model Validation Accuracy History','Batch Iterations','Accuracy(%)','val_acc.png')
+    history.append(train_losses)
+    history.append(train_accs)
+    history.append(val_losses)
+    history.append(val_accs)
+    return history
 ```
 Here we can see the classic training (and validation) pipeline:
 Firstly we use the built-in pytorch dataloaders to iterate through the input images in batches.
-The model trains throughout many **epochs** (25 in our case are more than sufficient) by taking one **forward** and one **backward** pass of all training samples each time. Forward propagation calculates the loss and cost functions by comparing the difference between the actual and predicted target for each labeled image
+The model trains throughout many **epochs** (25 in our case are more than sufficient) by taking one **forward** and one **backward** pass of all training samples each time. Forward propagation calculates the loss and cost functions by comparing the difference between the actual and predicted target for each labeled image.
 Backward propagation uses [stochastic gradient descent](https://en.wikipedia.org/wiki/Stochastic_gradient_descent) optimizer to update the weights and bias for each neuron, attributing more impact on the neurons which have the most predictive power, until it arrives to an optimal activation combination (**global minimum**)(see image below).
 
 ![gradient descent](https://user-images.githubusercontent.com/83078138/222984187-2655f905-ce66-4a89-a3a5-5cb3f4b41b58.jpg)
@@ -213,9 +228,10 @@ Then we have the testing function, where we test our already trained model with 
 #testing function        
 def test_model(test_loader,base,model,loss_fn,batch_size):
     model.eval()
-    test_size = len(test_loader.dataset)
-    test_loss=0
-    test_correct=0
+    test_samples = len(test_loader.dataset)
+    test_batches = len(test_loader)
+    t_loss=0
+    t_correct=0
     random_number=np.random.randint(0,len(test_loader))
 
     with torch.no_grad():
@@ -227,36 +243,47 @@ def test_model(test_loader,base,model,loss_fn,batch_size):
             out=features_extractor(base,inputs)
             pred = model(out).to(torch.float).view(batch_size)
             loss=loss_fn(pred, labels)
-            loss=loss.detach()
-            test_loss += loss
+            loss=loss.item()
+            t_loss += loss
 
-            #select radnom batch to visualize predictions
-            if(i==random_number):
-                show_random_prediction(inputs,pred,num=6)
+            #select random batch to visualize predictions
+            #if(i==random_number):
+                #show_random_prediction(inputs,pred,num=6)
             
             #checking testing accuracy
             pred=pred.detach().round()
             for t in range(batch_size):
                 if (pred[t]==labels[t]).item():
-                    test_correct +=1
+                    t_correct +=1
 
-    test_loss /= len(test_loader)
-    test_correct /= test_size
-    print(f"Avg loss: {test_loss} \nAccuracy: {test_correct*100}%")
+        t_loss /= test_batches
+        t_correct /= test_samples
+        t_loss=np.round(t_loss,decimals=3)
+        t_correct=np.round(t_correct*100,decimals=2)
+
+    return t_loss,t_correct
 ```
 In my testing the model has reached an accuracy above **97%** on the test dataset (500 images) 
 The remaining function are all helper function for plotting and visualizing results and images
 ## Results
+Just as a reference point, my vgg model results are compared with the [resnet18](https://en.wikipedia.org/wiki/Residual_neural_network) ones.
+Resnet , or residual network, is a specific type of neural network that was introduced in 2015 to help alleviate the problem of training large CNNs using the concept of ***residual blocks*** and ***skip connection***.
+### Training
+
 After 25 epochs of training the model history looks like this:
 
 ![Train loss](https://user-images.githubusercontent.com/83078138/222993036-2eb9c776-5a08-4bd7-a3e4-7f9321ee07c4.png)
-![train_acc](https://user-images.githubusercontent.com/83078138/222993062-0c001ff8-ef51-4027-b729-d795c193ec18.png)
-![Val_loss](https://user-images.githubusercontent.com/83078138/222993832-4770fc32-46af-47b0-9662-9fc7ebebb23e.png)
-![val_acc](https://user-images.githubusercontent.com/83078138/222993869-7b375995-5bc6-400f-9812-564378d9fb8f.png)
+![train acc](https://user-images.githubusercontent.com/83078138/222993062-0c001ff8-ef51-4027-b729-d795c193ec18.png)
+![Val loss](https://user-images.githubusercontent.com/83078138/222993832-4770fc32-46af-47b0-9662-9fc7ebebb23e.png)
+![val acc](https://user-images.githubusercontent.com/83078138/222993869-7b375995-5bc6-400f-9812-564378d9fb8f.png)
+
+### Testing
 
 Here's an example of the model prediction with 6 random images:
 
 ![test_batch_example](https://user-images.githubusercontent.com/83078138/222992540-94f81def-6de9-486a-8c9b-d59b41c9632f.png)
+
+We can see that, although there is not much difference beetween vgg and resnet results, the second seems to have a small edge in all metrics (especially the loss), while accuracy differs generally by less than 1%.
 
 ## Usage
 To use this project you need to have **python 3** installed on your system and install the following python **libraries**:
@@ -284,7 +311,7 @@ Finally, if you want to try training and testing, on your own images, you can (y
 just run 'GrapesDetector.py command. 
 
 **Note**: to run GrapesDetector you'll need to pass an argument:  
-run ***py GrapesDetector.py train*** if you want to train your own model, ***py GrapesDetector.py test*** if you want to test a saved model. A the and of the training the model will be saved in the project main directory as 'model_state.pt'. The project come in with a model which i have already trained with 4000 samples which you can test straight away. Have fun with it! :)
+run ***py GrapesDetector.py train*** if you want to train your own model, ***py GrapesDetector.py test*** if you want to test a saved model. At the end of training the vgg and resnet models will be saved in the main project folder as 'grapes_detector_vgg' and 'grepes_detector_resnet' respectively. The project comes in with the models which i have already trained and tested with 4000 samples which you can test straight away. Have fun with it! :)
 
 
 
