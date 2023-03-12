@@ -8,6 +8,7 @@ import torchvision.models as models
 import numpy as np
 import argparse
 import os
+import time
 
 #hyperparameters
 train_dir='data//processed_data//train' 
@@ -223,7 +224,7 @@ def imshow(inp, title=None):
     plt.pause(5)
 
 #plotter helper function
-def history_plotter(vgg_history,resnet_history):
+def history_plotter(vgg_history,resnet_history,vgg_time,res_time):
 
     #plotting training loss
     plt.figure(figsize=(10,5))
@@ -266,7 +267,23 @@ def history_plotter(vgg_history,resnet_history):
     plt.xlabel('epochs')  
     plt.ylabel('loss')
     plt.legend()
-    plt.savefig('data//plotted_results//'+'val_acc_comp')
+    plt.savefig('data//plotted_results//'+'val_acc')
+    plt.show()
+
+    #plotting training time
+    categories = ["VGG19", "RESNET18"]
+    fig=plt.figure(figsize=(10,5))
+    plt.subplot(1,1,1)
+    plt.title('training time')
+    xs = np.arange(1, len(categories) + 1)
+    plt.bar(xs, [vgg_time,res_time], width=1, color=['green','red'], edgecolor='black')
+    plt.text(0.75,vgg_time,str(vgg_time),fontweight='bold')
+    plt.text(1.75,res_time,str(res_time),fontweight='bold')
+    plt.ylabel('time(minutes)',labelpad=0)
+    plt.xticks(xs, categories)
+    plt.xlim(0, len(categories) + 1)
+    plt.suptitle('VGG19 vs RESNET18 (Training)')
+    fig.savefig('data//plotted_results//'+'training_time')
     plt.show()
 
 #arg parser function
@@ -318,37 +335,53 @@ def main(mode):
     
         #testing models
         print("testing model...")
+        start=time.time()
         vgg_loss,vgg_acc=test_model(test_dataloader, vgg, loaded_model_vgg, loss_fn, batch_size)
+        end=time.time()
+        vgg_time=np.round(end-start,decimals=2)
+        start=time.time()
         res_loss,res_acc=test_model(test_dataloader, resnet, loaded_model_resnet, loss_fn, batch_size)
-
+        end=time.time()
+        res_time=np.round(end-start,decimals=2)
 
         #plotting testing history
         categories = ["VGG19", "RESNET18"]
         fig=plt.figure(figsize=(10,5))
         #loss graph
-        plt.subplot(1,2,1)
+        plt.subplot(1,3,1)
         plt.title('average test loss')
         xs = np.arange(1, len(categories) + 1)
         plt.bar(xs, [vgg_loss,res_loss], width=1, color=['green','red'], edgecolor='black')
         plt.text(0.75,vgg_loss,str(vgg_loss),fontweight='bold')
         plt.text(1.75,res_loss,str(res_loss),fontweight='bold')
-        plt.ylabel('loss')
+        plt.ylabel('loss',labelpad=0)
         plt.xticks(xs, categories)
         plt.xlim(0, len(categories) + 1)
 
         #acc graph
-        plt.subplot(1,2,2)
+        plt.subplot(1,3,2)
         plt.title('test accuracy')
         xs = np.arange(1, len(categories) + 1)
         plt.bar(xs, [vgg_acc,res_acc], width=1, color=['green','red'], edgecolor='black')
         plt.text(0.75,vgg_acc,str(vgg_acc),fontweight='bold')
         plt.text(1.75,res_acc,str(res_acc),fontweight='bold')
-        plt.ylabel('accuracy(%)')
+        plt.ylabel('accuracy(%)',labelpad=0)
+        plt.xticks(xs, categories)
+        plt.xlim(0, len(categories) + 1)
+
+        #time graph
+        plt.subplot(1,3,3)
+        plt.title('test time')
+        xs = np.arange(1, len(categories) + 1)
+        plt.bar(xs, [vgg_time,res_time], width=1, color=['green','red'], edgecolor='black')
+        plt.text(0.75,vgg_time,str(vgg_time),fontweight='bold')
+        plt.text(1.75,res_time,str(res_time),fontweight='bold')
+        plt.ylabel('time(seconds)',labelpad=0)
         plt.xticks(xs, categories)
         plt.xlim(0, len(categories) + 1)
 
         fig.savefig('data//plotted_results//vggVSresnet')
-        plt.suptitle('VGG19 vs RESNET18')
+        plt.suptitle('VGG19 vs RESNET18 (Testing)')
         plt.show()
         print("Testing Done!")
     
@@ -381,8 +414,11 @@ def main(mode):
         optimizer= torch.optim.SGD(grapes_detector_vgg.parameters(),lr=learning_rate)
 
         #training model (with validation)
+        start=time.time()
         history_vgg=train_model(train_dataloader, val_dataloader, vgg, grapes_detector_vgg, loss_fn, optimizer, batch_size, epochs)   
-        print("Training Done!")
+        end=time.time()
+        vgg_time=np.round((end-start)/60,decimals=2)
+        print("VGG model Trained!")
 
         #saving trained model as 'model_state.pt'
         print('saving trained model') 
@@ -398,7 +434,11 @@ def main(mode):
         optimizer= torch.optim.SGD(grapes_detector_resnet.parameters(),lr=learning_rate)
 
         #training model (with validation)
-        history_resnet=train_model(train_dataloader, val_dataloader, resnet, grapes_detector_resnet, loss_fn, optimizer, batch_size, epochs)   
+        start=time.time()
+        history_resnet=train_model(train_dataloader, val_dataloader, resnet, grapes_detector_resnet, loss_fn, optimizer, batch_size, epochs)
+        end=time.time()
+        res_time=np.round((end-start)/60,decimals=2)   
+        print("RESNET model Trained!")
         print("Training Done!")
 
         #saving trained model as 'model_state.pt'
@@ -408,7 +448,8 @@ def main(mode):
         print('model saved succesfully')
 
         #plotter function
-        history_plotter(history_vgg,history_resnet)
+        history_plotter(history_vgg,history_resnet,vgg_time,res_time)
+
 
     else:
         raise TypeError("Unknown mode: use train or test")

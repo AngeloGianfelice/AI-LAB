@@ -281,11 +281,12 @@ After 25 epochs of training the model history looks like this:
 
 ![vggVSresnet](https://user-images.githubusercontent.com/83078138/224561332-83ce4aee-8ef1-43c1-8542-7cfab80dd8cf.png)
 
-We can see that, although there is not much difference beetween vgg and resnet results, the second seems to have a small edge in all metrics (especially the loss), while accuracy differs generally by less than 1%.
-
 Here's an example of the model prediction with 6 random images:
 
 ![test_batch_example](https://user-images.githubusercontent.com/83078138/222992540-94f81def-6de9-486a-8c9b-d59b41c9632f.png)
+
+
+We can see that, although there is not much difference beetween vgg and resnet in terms of **accuracy** (around 97-98%), the second seems to have a smaller **loss**, and, most importantly, both ***training and testing time is more than halved***, which makes training and testing the model far easier. Note that the models have been trained and tested on my GTX 1060 GPU, and using a different device could drastically change both training and testing time.
 
 ## Usage
 To use this project you need to have **python 3** installed on your system and install the following python **libraries**:
