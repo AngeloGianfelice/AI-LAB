@@ -5,4 +5,4 @@
 /data/processed_data/train/
 /data/processed_data/val/
 /data/processed_data/test/
-/GrapesDetector.py/
+GrapesDetector.py
