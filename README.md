@@ -27,10 +27,12 @@ To extract the **style** of an image, and not its deteiled features, we need to 
 Consider two vectors(more specifically 2 **flattened** feature vectors from a convolutional feature map of depth C) representing features of the input space, and their dot product give us the information about the relation between them. The lesser the product the more different the learned features are and greater the product, the more correlated the features are. In other words, the lesser the product, the lesser the two features co-occur and the greater it is, the more they occur together. This in a sense gives information about an ***image’s style(texture)*** and zero information about its spatial structure, since we already flatten the feature and perform dot product on top of it. Here's a rapresentation of the gram matrix computation: 
 
 
+![The-process-of-Gram-matrix-computation](https://user-images.githubusercontent.com/83078138/226183334-332209a6-932d-44b2-bddc-73f047c94e3c.png)
+
 
 In my case I've applied the gram matrix to the first convolutional layer of the first, second, third and fifth convolutional blocks (layers 'conv1_1', 'conv2_1', 'conv3_1', 'conv5_1'). I then trained 4 different models where the style extraction occurs a the 4 different layer and compared the results (see below).
 
-The final classification layer consists of a simple [logistic regression](https://en.wikipedia.org/wiki/Logistic_regression) using the [sigmoid function](https://en.wikipedia.org/wiki/Sigmoid_function)(see image below) to calculate the probability that the given image (or more precisely, its features) contains grapes:
+The final classification layer consists of a simple [logistic regression](https://en.wikipedia.org/wiki/Logistic_regression) using the [sigmoid function](https://en.wikipedia.org/wiki/Sigmoid_function)(see image below) to calculate the probability that the given image (or more precisely, its style features) contains grapes:
 
 ![logistic curve](https://user-images.githubusercontent.com/83078138/224567842-729afab6-71ec-454e-a001-4a39c2b163a8.png)
 
@@ -38,8 +40,7 @@ The final classification layer consists of a simple [logistic regression](https:
 Raw images are first preprocessed in 'image_preprocessing.py' to assure they are all **RGB** format (3 channels) and **splitted** (via the [Split-Folders library](https://pypi.org/project/split-folders/)) into the folder structure shown below:
 
 ![folder structure](https://user-images.githubusercontent.com/83078138/222977832-9fc3f9e0-a5f2-4cb6-9377-04a484178999.PNG)
-
-          
+         
 where Class0 folders contains images without grapes, while Class1 contains images with grapes.
 Here's the code for image processing: 
 ```python
@@ -137,7 +138,7 @@ def gram_matrix(input):
     # by dividing by the number of element in each feature maps.
     return G.div(b*c*h*w)
 ```
-Note that the output of this function will have (bxc,bxc) shape.
+Note that the output of this function will have (bxc,bxc) shape, where b is the batch size and c is the number of feature maps.
 Then we define our classification model:
 ```python
 #Grapes detection Neural network
@@ -314,16 +315,18 @@ I compared the 4 models in terms of loss, accuracy and time (both in training ph
 
 After 25 epochs of training the models history looks like this:
 
-
-
-
-
+![train_loss](https://user-images.githubusercontent.com/83078138/226183422-597e9b45-c699-4cc1-a7c9-1d91b1b75d21.png)
+![traintrain_acc](https://user-images.githubusercontent.com/83078138/226183427-2bb60254-e213-4cd5-8116-41242051bddf.png)
+![val_loss](https://user-images.githubusercontent.com/83078138/226183431-9370d4fc-23ef-4175-a60b-c69ede254862.png)
+![val_acc](https://user-images.githubusercontent.com/83078138/226183433-73c71266-5f13-403d-a4c5-62262e263f42.png)
 
 ### Testing
 
 In my testing the models on the test dataset (500 images) the results are this: 
 
-
+![test_losses](https://user-images.githubusercontent.com/83078138/226183473-962075f8-612d-470a-b666-1f2b43ff5702.png)
+![test_accs](https://user-images.githubusercontent.com/83078138/226183476-6694d664-c26e-4cdb-98e8-5e71023c0045.png)
+![test_times](https://user-images.githubusercontent.com/83078138/226183479-3d4ddc55-ed90-48d2-b2fa-a8a7a9936a30.png)
 
 Here's an example of the model prediction with 6 random images from the test dataset:
 
