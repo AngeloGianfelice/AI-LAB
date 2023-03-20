@@ -315,10 +315,11 @@ I compared the 4 models in terms of loss, accuracy and time (both in training ph
 
 After 25 epochs of training the models history looks like this:
 
-![train_loss](https://user-images.githubusercontent.com/83078138/226183422-597e9b45-c699-4cc1-a7c9-1d91b1b75d21.png)
-![traintrain_acc](https://user-images.githubusercontent.com/83078138/226183427-2bb60254-e213-4cd5-8116-41242051bddf.png)
-![val_loss](https://user-images.githubusercontent.com/83078138/226183431-9370d4fc-23ef-4175-a60b-c69ede254862.png)
-![val_acc](https://user-images.githubusercontent.com/83078138/226183433-73c71266-5f13-403d-a4c5-62262e263f42.png)
+![train_loss](https://user-images.githubusercontent.com/83078138/226459448-32595b79-528d-4abd-b06a-e4ebfe12428b.png)
+![train_acc](https://user-images.githubusercontent.com/83078138/226459485-dd1626ee-61bb-45ce-8f62-d9eb53a72387.png)
+![val_loss](https://user-images.githubusercontent.com/83078138/226459514-279629ab-0dc4-47a7-b717-52a7e08a24ef.png)
+![val_acc](https://user-images.githubusercontent.com/83078138/226459553-fdaf1b4a-5e18-4f8d-bba7-9065df184775.png)
+![training_time](https://user-images.githubusercontent.com/83078138/226459653-db9b3647-3597-4973-8960-7b893bf17cec.png)
 
 ### Testing
 
