@@ -266,7 +266,7 @@ def history_plotter(data,times):
     plt.xlabel('epochs')  
     plt.ylabel('loss')
     plt.legend()
-    plt.savefig('data//plotted_results//train//'+'train_loss_comp')
+    plt.savefig('data//plotted_results//train//'+'train_loss')
     plt.show()
 
     #plotting training accuracy
@@ -279,7 +279,7 @@ def history_plotter(data,times):
     plt.xlabel('epochs')  
     plt.ylabel('accuracy(%)')
     plt.legend()
-    plt.savefig('data//plotted_results//train//'+'train_acc_comp')
+    plt.savefig('data//plotted_results//train//'+'train_acc')
     plt.show()
 
     #plotting validation loss
@@ -292,7 +292,7 @@ def history_plotter(data,times):
     plt.xlabel('epochs')  
     plt.ylabel('loss')
     plt.legend()
-    plt.savefig('data//plotted_results//train//'+'val_loss_comp')
+    plt.savefig('data//plotted_results//train//'+'val_loss')
     plt.show()
 
     #plotting validation accuracy
@@ -303,7 +303,7 @@ def history_plotter(data,times):
     plt.plot(data[2][3],label='conv3_1') 
     plt.plot(data[3][3],label='conv5_1')   
     plt.xlabel('epochs')  
-    plt.ylabel('loss')
+    plt.ylabel('accuracy(%)')
     plt.legend(loc='best',fontsize='xx-small')
     plt.savefig('data//plotted_results//train//'+'val_acc')
     plt.show()
