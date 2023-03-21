@@ -310,10 +310,10 @@ def test_model(test_loader,style_extractor,model,loss_fn,batch_size):
 ```
 The remaining function are all helper function for plotting and visualizing results and images
 ## Results
-I compared the 4 models in terms of loss, accuracy and time (both in training phase and in the testing phase).
-### Training
+I compared the 4 models in terms of loss, accuracy and time (both in training phase and in the testing phase). Just as a reference point I also used ***resnet18*** CNN as a style extractor and compared the results. Note that vgg and resnet have different model architecture (so different style layers as well), so this results are to be taken with a pinch of salt.
+### Training(**VGG**)
 
-After 25 epochs of training the models history looks like this:
+After 25 epochs of training the vgg models history looks like this:
 
 ![train_loss](https://user-images.githubusercontent.com/83078138/226459448-32595b79-528d-4abd-b06a-e4ebfe12428b.png)
 ![train_acc](https://user-images.githubusercontent.com/83078138/226459485-dd1626ee-61bb-45ce-8f62-d9eb53a72387.png)
@@ -321,13 +321,31 @@ After 25 epochs of training the models history looks like this:
 ![val_acc](https://user-images.githubusercontent.com/83078138/226459553-fdaf1b4a-5e18-4f8d-bba7-9065df184775.png)
 ![training_time](https://user-images.githubusercontent.com/83078138/226459653-db9b3647-3597-4973-8960-7b893bf17cec.png)
 
-### Testing
+### Training(**RESNET**)
 
-In my testing the models on the test dataset (500 images) the results are this: 
+After 25 epochs of training the resnet models history looks like this:
+
+![train_loss_res](https://user-images.githubusercontent.com/83078138/226694220-fb84fc04-351d-4421-bc9f-beb25b903a4d.png)
+![train_acc_res](https://user-images.githubusercontent.com/83078138/226694261-8497bcd1-17d5-4532-b1ad-6105393cbdde.png)
+![val_loss_res](https://user-images.githubusercontent.com/83078138/226694337-c385af00-1ceb-4d52-867a-b26e889783e3.png)
+![val_acc_res](https://user-images.githubusercontent.com/83078138/226694388-ad85f981-02db-43b9-939f-6fda424dca99.png)
+![training_time_res](https://user-images.githubusercontent.com/83078138/226694632-9c670979-b956-4ceb-912b-165f5abe2c46.png)
+
+### Testing(**VGG**)
+
+In my testing the vgg models on the test dataset (500 images) the results are this: 
 
 ![test_losses](https://user-images.githubusercontent.com/83078138/226183473-962075f8-612d-470a-b666-1f2b43ff5702.png)
 ![test_accs](https://user-images.githubusercontent.com/83078138/226183476-6694d664-c26e-4cdb-98e8-5e71023c0045.png)
 ![test_times](https://user-images.githubusercontent.com/83078138/226183479-3d4ddc55-ed90-48d2-b2fa-a8a7a9936a30.png)
+
+### Testing(**RESNET**)
+
+In my testing the resnet models on the test dataset (500 images) the results are this: 
+
+![test_losses_res](https://user-images.githubusercontent.com/83078138/226694752-e0b2a95c-868f-4e43-a364-bdc21775e651.png)
+![test_accs_res](https://user-images.githubusercontent.com/83078138/226694812-60d23024-158e-4236-ba38-3ae375b59681.png)
+![test_times_res](https://user-images.githubusercontent.com/83078138/226694942-509e9518-9636-4b0d-827c-ebeb918a3ee8.png)
 
 Here's an example of the model prediction with 6 random images from the test dataset:
 
@@ -337,7 +355,8 @@ Here's an example of the model prediction with 6 random images from the test dat
 We can see that, the more we go deep into the vgg19 CNN, the more the losses decreaces and the accuracy increaces, reaching around **97%** if we use the ***conv5_1*** layer for style extraction. From that we can derive that the more we get away from the input image, the more we lose 
 spatial information and detailed features (a.k.a. the **content** of the image), and we better extract information about image style and texture
 (what we are looking for).
-One negative aspect, as it's clearly shown in the results, is that the deeper you go, the more time is required for the forwanding through the vgg model and ,most importantly, the computation of the gram matrix (the number of features increases rapidly as we into the deeper layers) becomes very slow.
+One negative aspect, as it's clearly shown in the results, is that the deeper you go, the more time is required for the forwanding through the vgg model and ,most importantly, the computation of the gram matrix (the number of features increases rapidly as we into the deeper layers) becomes very slow. 
+Morover based on the vgg results compared to the resnet ones we can see that although the accuracy and loss is very similar both in training and in testing, there is a huge difference in training and testing time, as resnet seems to be much faster than vgg.
 
 ## Usage
 To use this project you need to have **python 3** installed on your system and install the following python **libraries**:
