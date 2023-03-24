@@ -358,6 +358,27 @@ spatial information and detailed features (a.k.a. the **content** of the image),
 One negative aspect, as it's clearly shown in the results, is that the deeper you go, the more time is required for the forwanding through the vgg model and ,most importantly, the computation of the gram matrix (the number of features increases rapidly as we into the deeper layers) becomes very slow. 
 Morover based on the vgg results compared to the resnet ones we can see that although the accuracy and loss is very similar both in training and in testing, there is a huge difference in training and testing time, as resnet seems to be much faster than vgg.
 
+### Limit Testing
+
+I've tested my vgg-based grapes detector model with 2 complete new datasets in order to test the limits of my model: 
+the first dataset is made up of 100 images of grapes (without any non-grapes images).Here's a small sample of it:
+
+![Figure_1](https://user-images.githubusercontent.com/83078138/227550247-afdd191f-bf04-4cfc-9cd9-daec4b5424c3.png)
+
+The results on this dataset are this:
+
+![test_losses](https://user-images.githubusercontent.com/83078138/227538493-5b0c0f18-7f84-414f-a82a-dc330ab02fbe.png)
+![test_accs](https://user-images.githubusercontent.com/83078138/227538518-baeb8e6b-46c4-4c67-b8de-820eb8a2c7e3.png)
+![test_times](https://user-images.githubusercontent.com/83078138/227538537-c6885e90-56d1-4174-9625-ab2e0188a808.png)
+
+We can see that this results are very similar to the ones collected on the normal test datased, so no surprises.
+The same can be said for the second datased, composed of 500 images of vineyards (but without any grapes,see sample below), eventhough we can notice that the style layer that works the best on this particular dataset is the third one, while we can see a small but noticeble dip in model performance with the last style layer (conv5_1). Here's the results:
+
+![Figure_2](https://user-images.githubusercontent.com/83078138/227552346-d51163f3-ecfc-450d-bc4b-99a0fae1cc15.png)
+![test_losses](https://user-images.githubusercontent.com/83078138/227538887-e32573e1-e273-4bf9-bd60-26c25c95302d.png)
+![test_accs](https://user-images.githubusercontent.com/83078138/227538908-0d806827-632a-4289-affb-cb6139ec7ca7.png)
+![test_times](https://user-images.githubusercontent.com/83078138/227538922-b9eb63ac-22d3-4b1d-9caf-56ed74acca23.png)
+
 ## Usage
 To use this project you need to have **python 3** installed on your system and install the following python **libraries**:
 
@@ -386,7 +407,7 @@ Finally, if you want to try training and testing, on your own images, you can (y
 just run 'GrapesDetector.py command. 
 
 **Note**: to run GrapesDetector you'll need to pass an argument:  
-run ***py GrapesDetectorStyle.py train*** if you want to train your own models, ***py GrapesDetectorStyle.py test*** if you want to test the saved models. At the end of training the models will be saved in the 'models' folder of the project as 'grepes_detector_vgg{i}.pt' (where i=0,1,2,3) respectively. The project comes in with the models which i have already trained and tested with 4000 samples which you can test straight away. Have fun with it! :)
+run ***py GrapesDetectorStyleVgg.py train*** if you want to train your own models, ***py GrapesDetectorStyleVgg.py test*** if you want to test the saved models. At the end of training the models will be saved in the 'models' folder of the project as 'grepes_detector_vgg{i}.pt' (where i=0,1,2,3) respectively. The project comes in with the models which i have already trained and tested with 4000 samples which you can test straight away. Have fun with it! :)
 
 
 
